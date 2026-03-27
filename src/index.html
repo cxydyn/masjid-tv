@@ -3,282 +3,302 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jadwal Sholat Digital - Masjid TV</title>
+    <title>Jadwal Sholat Digital - Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <style>
         html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-            overflow: hidden; /* Mencegah scroll agar pas di TV */
-        }
-        body {
+            margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden;
             font-family: 'Poppins', sans-serif;
-            background-color: #000;
-            transition: background-color 0.5s ease;
-        }
-        .main-container {
-            color: white;
-            padding: 1rem;
-            width: 100vw;
-            height: 100vh;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            transition: background 0.5s ease;
+            background-color: #0f172a;
         }
 
-        /* Tema Siang */
-        .main-container.day-theme {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-        }
-        .day-theme .glass-box {
-            background-color: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .day-theme .main-clock-box {
-            background-color: white;
-            color: #1e3a8a;
-        }
+        /* --- THEMES --- */
+        .day-theme { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
+        .day-theme .glass-panel { background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.2); }
+        .dark-theme { background: linear-gradient(135deg, #020617 0%, #0f172a 100%); }
+        .dark-theme .glass-panel { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5); }
+        .glass-panel { backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-radius: 24px; transition: all 0.5s ease; }
 
-        /* Tema Malam */
-        .main-container.dark-theme {
-            background: linear-gradient(135deg, #111827, #000000);
-        }
-        .dark-theme .glass-box {
-            background-color: rgba(31, 41, 55, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .dark-theme .main-clock-box {
-            background-color: #1f2937;
-            color: white;
-        }
-
-        .glass-box {
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border-radius: 16px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
-        /* GRID SYSTEM: Responsive Landscape/Portrait */
-        .content-grid {
-            display: grid;
-            grid-template-columns: 1.8fr 1fr; 
-            gap: 1rem;
-            flex-grow: 1;
-            min-height: 0;
-        }
-
-        @media (orientation: portrait) {
-            .content-grid {
-                grid-template-columns: 1fr;
-                grid-template-rows: 1fr 1.5fr;
-            }
-            .time { font-size: 15vw !important; }
-            .countdown-time { font-size: 8vw !important; }
-        }
-
-        .right-panel {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            border-radius: 16px;
-            overflow: hidden;
-            background-color: #000;
-        }
-        .right-panel iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 0;
-        }
-
-        .main-clock-box {
-            padding: 1.2rem;
-            text-align: center;
-            border-radius: 16px;
-        }
-        .time {
-            font-size: 5.5vw;
-            font-weight: 800;
-            line-height: 1;
-        }
-        .countdown-time {
-            font-size: 3vw;
-            font-weight: 700;
-            color: #fbbf24;
-        }
-
-        #prayer-times-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-            height: 100%;
-        }
-
-        .prayer-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.4rem 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .prayer-item:last-child { border: 0; }
+        /* --- LAYOUT GRID --- */
+        .app-wrapper { display: flex; flex-direction: column; height: 100vh; width: 100vw; box-sizing: border-box; padding: 1.5rem 1.5rem 0 1.5rem; color: white; }
+        .content-area { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; flex-grow: 1; min-height: 0; padding-bottom: 1.5rem; }
         
-        #prayer-lock-overlay {
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle, #000, #111);
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
+        @media (orientation: portrait) {
+            .content-area { grid-template-columns: 1fr; grid-template-rows: 1fr 1.5fr; }
+            .huge-time { font-size: 16vw !important; }
+            .countdown-text { font-size: 8vw !important; }
         }
 
-        input, textarea { color: #000 !important; }
+        /* --- COMPONENTS --- */
+        .huge-time { font-size: 6vw; font-weight: 900; line-height: 1; letter-spacing: -0.02em; }
+        .countdown-text { font-size: 3.5vw; font-weight: 800; color: #fbbf24; font-variant-numeric: tabular-nums; }
+        .arabic-text { font-family: 'Amiri', serif; font-size: 2.25rem; line-height: 1.8; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .text-glow { text-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+        
+        /* Video Container */
+        .video-container { position: relative; width: 100%; height: 100%; border-radius: 24px; overflow: hidden; background: #000; box-shadow: inset 0 0 20px rgba(0,0,0,1); display: flex; justify-content: center; align-items: center; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; z-index: 10; }
+        .video-overlay { position: absolute; inset: 0; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); pointer-events: none; z-index: 20; }
+        .video-placeholder { color: #475569; font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; z-index: 1; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+        /* Ticker Bar */
+        .ticker-bar { background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(10px); margin: 0 -1.5rem; padding: 0.75rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; }
+
+        /* Highlight Prayer Item */
+        .prayer-item { transition: all 0.3s ease; padding: 0.75rem 1.5rem; border-radius: 16px; margin-bottom: 0.25rem; }
+        .prayer-item.active { background: linear-gradient(90deg, rgba(245, 158, 11, 0.2), transparent); border-left: 4px solid #fbbf24; }
+        .prayer-item.active .prayer-name { color: #fbbf24; font-weight: 800; }
+        .prayer-item.active .prayer-time { color: #fff; font-weight: 900; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+
+        /* Overlays */
+        .fullscreen-overlay { position: fixed; inset: 0; z-index: 1000; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        #adhan-warning { background: linear-gradient(135deg, rgba(245, 158, 11, 0.95), rgba(217, 119, 6, 0.95)); color: #1e3a8a; backdrop-filter: blur(20px); }
+        #prayer-lock { background: radial-gradient(circle, #111827, #000000); }
     </style>
 </head>
-<body class="day-theme">
+<body id="app-body" class="day-theme">
 
-    <div id="main-container" class="main-container day-theme">
+    <div class="app-wrapper">
         <!-- HEADER -->
-        <div class="flex justify-between items-center mb-4 border-b border-white/20 pb-2">
-            <div>
-                <h2 id="mosque-name-display" class="text-2xl font-black uppercase tracking-tight">Masjid Ar-Rahim</h2>
-                <p id="location-display" class="text-sm opacity-70 italic">Mencari lokasi...</p>
-            </div>
-            <div class="text-right flex items-center gap-4">
-                <div>
-                    <h2 id="date-gregorian" class="text-lg font-bold">...</h2>
-                    <p id="date-hijri" class="text-sm opacity-80">...</p>
+        <header class="flex justify-between items-end mb-6">
+            <div class="flex flex-col">
+                <div class="flex items-center gap-3 mb-1">
+                    <svg class="w-6 h-6 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zM9 5h2v5.58l3.24 3.24-1.42 1.42-4-4V5z"/></svg>
+                    <span id="date-hijri" class="text-amber-400 font-semibold tracking-wide uppercase">Memuat Hijriah...</span>
                 </div>
-                <button id="settings-btn" class="p-2 bg-white/10 rounded-full hover:bg-white/20">
-                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+                <h1 id="mosque-name-display" class="text-4xl md:text-5xl font-black uppercase tracking-tight text-white drop-shadow-lg">Memuat...</h1>
+            </div>
+            
+            <div class="text-right flex items-center gap-6">
+                <div class="flex flex-col items-end">
+                    <h2 id="date-gregorian" class="text-2xl font-bold text-white">Memuat Tanggal...</h2>
+                    <p id="location-display" class="text-blue-200 font-medium tracking-wide">Mencari lokasi...</p>
+                </div>
+                <button id="settings-btn" class="relative p-4 bg-white/10 hover:bg-white/20 rounded-2xl backdrop-blur-md transition-all border border-white/20 shadow-lg">
+                    <div id="sync-status" class="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-500 border-2 border-slate-900 shadow-md" title="Status Cloud"></div>
+                    <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
             </div>
-        </div>
+        </header>
 
-        <!-- MAIN CONTENT -->
-        <div class="content-grid">
-            <div class="right-panel shadow-2xl">
-                <iframe id="live-stream" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                <div id="adhan-warning" class="absolute inset-0 bg-amber-500 text-blue-900 hidden flex-col items-center justify-center p-4 text-center z-50">
-                    <h1 class="text-6xl font-black uppercase mb-4">Waktu Sholat Tiba</h1>
-                    <p id="warning-name" class="text-4xl font-bold uppercase"></p>
+        <!-- MAIN CONTENT GRID -->
+        <div class="content-area">
+            <!-- Kiri: Video -->
+            <div class="video-container shadow-2xl relative border border-white/10">
+                <div class="video-placeholder">Memuat Video YouTube...</div>
+                <iframe id="live-stream" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                <div class="video-overlay"></div>
+                
+                <div id="adhan-warning" class="fullscreen-overlay absolute rounded-2xl">
+                    <div class="animate-bounce mb-6">
+                        <svg class="w-24 h-24 text-blue-900 mx-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    </div>
+                    <h1 class="text-5xl md:text-7xl font-black uppercase mb-4 tracking-tighter">Waktu Sholat Tiba</h1>
+                    <p id="warning-name" class="text-4xl md:text-5xl font-bold uppercase tracking-widest"></p>
                 </div>
             </div>
 
+            <!-- Kanan: Info Panel -->
             <div class="flex flex-col gap-4">
-                <div class="main-clock-box shadow-xl">
-                    <div id="main-clock" class="time">00:00</div>
-                    <p class="text-lg opacity-60 uppercase font-bold tracking-widest mt-2">Waktu Sekarang</p>
-                </div>
-
-                <div class="glass-box p-4 text-center">
-                    <p id="next-prayer-name" class="font-bold text-amber-300 uppercase italic">Menghitung...</p>
-                    <div id="countdown-time" class="countdown-time">-00:00:00</div>
-                </div>
-
-                <div class="glass-box flex-grow overflow-hidden flex flex-col">
-                    <div id="prayer-times-container" class="flex-grow">
-                        <!-- Jadwal Injected Here -->
+                <div class="glass-panel p-6 flex flex-col items-center justify-center relative overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/30 rounded-full blur-3xl"></div>
+                    <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-amber-500/20 rounded-full blur-3xl"></div>
+                    <p class="text-sm uppercase font-bold tracking-[0.3em] opacity-70 mb-2">Waktu Saat Ini</p>
+                    <div id="main-clock" class="huge-time text-glow mb-4">00:00</div>
+                    <div class="w-full h-px bg-gradient-to-r from-transparent via-white/30 to-transparent my-2"></div>
+                    <div class="mt-2 text-center w-full">
+                        <p id="next-prayer-label" class="text-sm font-bold uppercase tracking-widest text-amber-400 mb-1">Menuju ...</p>
+                        <div id="countdown-time" class="countdown-text drop-shadow-md">-00:00:00</div>
                     </div>
-                    <!-- Ayat Section -->
-                    <div class="p-4 border-t border-white/10 text-center bg-black/10">
-                         <p id="ayat-text" class="text-right text-xl mb-2 font-serif" dir="rtl"></p>
-                         <p id="ayat-translation" class="text-xs italic opacity-80"></p>
+                </div>
+
+                <div class="glass-panel flex-grow p-4 flex flex-col justify-center">
+                    <div id="prayer-list-container" class="flex flex-col w-full"></div>
+                </div>
+
+                <div class="glass-panel p-5 relative overflow-hidden flex flex-col justify-center items-center text-center">
+                    <p id="ayat-text" class="arabic-text text-amber-300 w-full" dir="rtl">Memuat...</p>
+                    <div class="mt-3">
+                        <p id="ayat-translation" class="text-sm italic opacity-90 leading-relaxed max-w-sm mx-auto"></p>
+                        <p id="ayat-surah" class="text-xs font-bold uppercase tracking-wider text-blue-300 mt-2"></p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Running Text -->
-        <div class="mt-4 bg-black/30 p-2 rounded-xl glass-box overflow-hidden">
-            <marquee id="marquee-display" class="text-2xl font-medium tracking-wide">Luruskan dan rapatkan shaf sholat.</marquee>
+        <!-- TICKER BAR BAWAH -->
+        <div class="ticker-bar">
+            <div class="bg-amber-500 text-blue-950 text-xs md:text-sm font-black px-4 py-1.5 rounded-lg uppercase tracking-wider whitespace-nowrap z-10 shadow-lg">INFORMASI</div>
+            <marquee id="marquee-display" class="text-xl md:text-2xl font-medium tracking-wide ml-4 opacity-90 drop-shadow-md">Memuat informasi...</marquee>
         </div>
     </div>
 
     <!-- PRAYER LOCK OVERLAY -->
-    <div id="prayer-lock-overlay">
-        <h1 class="text-5xl font-black text-amber-500 mb-8 uppercase tracking-widest">Waktunya Berjamaah</h1>
-        <div id="lock-clock" class="text-9xl font-black text-white">00:00</div>
-        <p class="text-2xl opacity-60 mt-8 italic">"Harap matikan suara HP Anda"</p>
+    <div id="prayer-lock" class="fullscreen-overlay">
+        <h1 class="text-4xl md:text-6xl font-black text-amber-500 mb-8 uppercase tracking-widest text-glow">Waktunya Berjamaah</h1>
+        <div id="lock-clock" class="text-[10rem] md:text-[15rem] font-black text-white leading-none tracking-tighter">00:00</div>
+        <p class="text-2xl md:text-4xl opacity-80 mt-10 font-light italic text-blue-200">"Mohon matikan alat komunikasi Anda"</p>
     </div>
 
     <!-- SETTINGS MODAL -->
-    <div id="settings-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[2000] p-4">
-        <div class="bg-white rounded-3xl p-8 w-full max-w-md text-slate-900 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <h3 class="text-2xl font-black mb-6 uppercase">Pengaturan Masjid</h3>
-            <div class="space-y-4">
+    <div id="settings-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[2000] p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-lg text-slate-900 shadow-2xl max-h-[90vh] overflow-y-auto relative">
+            <h3 class="text-2xl font-black mb-6 uppercase tracking-tight">Pengaturan Remote</h3>
+            
+            <div class="space-y-5">
+                <!-- FITUR BARU: KODE SINKRONISASI -->
+                <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl">
+                    <label class="block text-xs font-black uppercase text-blue-600 mb-2">Kode Sinkronisasi Cloud</label>
+                    <input type="text" id="input-sync" class="w-full p-3 bg-white rounded-lg border-2 border-blue-200 focus:border-blue-500 transition-all font-bold text-lg text-center tracking-widest uppercase" placeholder="Misal: MASJID-01">
+                    <p class="text-[10px] mt-2 text-slate-500 font-medium text-center">Pastikan kode ini SAMA PERSIS di HP dan TV Anda agar saling terhubung.</p>
+                </div>
+
                 <div>
-                    <label class="block text-xs font-bold uppercase opacity-50 mb-1">Nama Masjid</label>
-                    <input type="text" id="input-mosque" class="w-full p-4 bg-slate-100 rounded-xl border-0 font-bold">
+                    <label class="block text-xs font-black uppercase text-slate-400 mb-1">Nama Masjid</label>
+                    <input type="text" id="input-mosque" class="w-full p-3 bg-slate-100 rounded-xl border-2 border-transparent focus:border-blue-500 transition-all font-bold text-lg">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase opacity-50 mb-1">YouTube Video ID</label>
-                    <input type="text" id="input-yt" class="w-full p-4 bg-slate-100 rounded-xl border-0 font-mono" placeholder="7pA7vU3JTAw">
+                    <label class="block text-xs font-black uppercase text-slate-400 mb-1">YouTube Video ID</label>
+                    <input type="text" id="input-yt" class="w-full p-3 bg-slate-100 rounded-xl border-2 border-transparent focus:border-blue-500 transition-all font-mono font-bold text-blue-600">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase opacity-50 mb-1">Running Text (Pesan)</label>
-                    <textarea id="input-marquee" class="w-full p-4 bg-slate-100 rounded-xl border-0 h-24"></textarea>
+                    <label class="block text-xs font-black uppercase text-slate-400 mb-1">Teks Berjalan (Info Bawah)</label>
+                    <textarea id="input-marquee" class="w-full p-3 bg-slate-100 rounded-xl border-2 border-transparent focus:border-blue-500 transition-all h-20 resize-none"></textarea>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase opacity-50 mb-1">Tema Tampilan</label>
-                    <div class="grid grid-cols-2 gap-2 mt-1">
-                        <label class="flex items-center p-3 rounded-xl border border-slate-200 cursor-pointer">
-                            <input type="radio" name="theme" value="auto" checked> <span class="ml-2 font-bold">Auto</span>
+                    <label class="block text-xs font-black uppercase text-slate-400 mb-1">Tema Warna</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center justify-center p-3 rounded-xl border-2 border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
+                            <input type="radio" name="theme" value="auto" class="w-5 h-5 accent-blue-600"> <span class="ml-3 font-bold">Otomatis</span>
                         </label>
-                        <label class="flex items-center p-3 rounded-xl border border-slate-200 cursor-pointer">
-                            <input type="radio" name="theme" value="dark"> <span class="ml-2 font-bold">Dark</span>
+                        <label class="flex items-center justify-center p-3 rounded-xl border-2 border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
+                            <input type="radio" name="theme" value="dark" class="w-5 h-5 accent-blue-600"> <span class="ml-3 font-bold">Malam</span>
                         </label>
                     </div>
                 </div>
-                <div class="flex gap-4 pt-4">
-                    <button id="save-btn" class="flex-grow bg-blue-600 text-white font-black py-4 rounded-2xl tracking-widest">SIMPAN</button>
-                    <button id="close-btn" class="bg-slate-200 px-6 rounded-2xl font-bold">BATAL</button>
+                <div class="flex gap-4 pt-4 mt-6 border-t border-slate-100">
+                    <button id="save-btn" class="flex-grow bg-blue-600 text-white font-black py-4 rounded-xl hover:bg-blue-700 transition-all shadow-lg tracking-widest uppercase">Simpan</button>
+                    <button id="close-btn" class="bg-slate-200 text-slate-700 px-8 rounded-xl font-bold hover:bg-slate-300 transition-all">Batal</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // --- DATA & CONFIG ---
+    <!-- FIREBASE MODULAR SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        //  PENTING: ISI KONFIGURASI FIREBASE ANDA 
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFnptJ6igVNdAdKPSwlKIH5rJnvTYgwtA",
+            authDomain: "aios-tv.firebaseapp.com",
+            projectId: "aios-tv",
+            storageBucket: "aios-tv.firebasestorage.app",
+            messagingSenderId: "858313683244",
+            appId: "1:858313683244:web:9a8f61a1dabf244b4bfc89",
+            measurementId: "G-1FRCLXRBNY"
+        };
+        
+        const myAppId = 'masjid-tv-app';
+        let db, auth, currentUser;
+        let unsubscribeCloud = null;
+
+        // --- STATE APLIKASI ---
         let appSettings = {
+            syncCode: "MASJID-01",
             mosqueName: "Masjid Ar-Rahim",
-            ytId: "7pA7vU3JTAw", // Rodja TV Default
-            marquee: "Selamat datang di Masjid Kami. Harap matikan suara ponsel Anda saat berada di dalam ruang sholat. Luruskan dan rapatkan barisan shaf.",
+            ytId: "7pA7vU3JTAw", 
+            marquee: "Selamat datang di Masjid. Harap matikan suara ponsel Anda saat berada di ruang sholat.",
             theme: "auto",
             city: "Jakarta"
         };
 
-        const prayerNames = ["Imsak", "Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
-        const prayerIndo = { Imsak:"Imsak", Fajr:"Subuh", Sunrise:"Terbit", Dhuhr:"Dzuhur", Asr:"Ashar", Maghrib:"Maghrib", Isha:"Isya" };
+        const prayerKeys = ["Imsak", "Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
+        const prayerLabels = { Imsak:"Imsak", Fajr:"Subuh", Sunrise:"Terbit", Dhuhr:"Dzuhur", Asr:"Ashar", Maghrib:"Maghrib", Isha:"Isya" };
         let prayerData = {};
+        let currentNextPrayer = "";
 
-        // --- CORE FUNCTIONS ---
-
-        function init() {
-            const saved = localStorage.getItem('masjid_tv_settings');
-            if (saved) appSettings = JSON.parse(saved);
+        // --- INISIALISASI ---
+        async function init() {
+            // Load dari local dulu agar cepat
+            const saved = localStorage.getItem('masjid_tv_settings_v2');
+            if (saved) appSettings = { ...appSettings, ...JSON.parse(saved) };
             
             applyUI();
             updateClock();
             setInterval(updateClock, 1000);
-            
-            handleLocation(); // Ambil Lokasi & Jadwal
+            handleLocation();
             fetchRandomAyat();
-            setInterval(fetchRandomAyat, 600000); // Ganti ayat tiap 10 menit
+            setInterval(fetchRandomAyat, 600000);
+
+            // Setup Firebase
+            try {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                
+                await signInAnonymously(auth);
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        currentUser = user;
+                        listenToCloud();
+                    }
+                });
+            } catch(e) {
+                console.log("Firebase tidak dikonfigurasi atau gagal konek. Berjalan dalam mode Offline (Hanya HP/TV ini saja).", e);
+            }
         }
 
+        // --- FIREBASE SYNC LOGIC ---
+        function listenToCloud() {
+            if (!currentUser || !db) return;
+            
+            // Berhenti mendengarkan kode lama jika kode diganti
+            if (unsubscribeCloud) unsubscribeCloud();
+
+            // Mendengarkan perubahan dokumen berdasarkan "Kode Sinkronisasi"
+            // Path Wajib: artifacts/{appId}/public/data/{collectionName}/{docId}
+            const docRef = doc(db, 'artifacts', myAppId, 'public', 'data', 'settings', appSettings.syncCode);
+            
+            unsubscribeCloud = onSnapshot(docRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const cloudData = snapshot.data();
+                    appSettings = { ...appSettings, ...cloudData };
+                    localStorage.setItem('masjid_tv_settings_v2', JSON.stringify(appSettings));
+                    applyUI();
+                    
+                    // Ubah indikator menjadi hijau (Tersambung)
+                    document.getElementById('sync-status').classList.replace('bg-red-500', 'bg-green-500');
+                } else {
+                    // Jika dokumen di cloud belum ada, buat baru dari settingan alat ini
+                    setDoc(docRef, appSettings, { merge: true });
+                }
+            }, (error) => {
+                console.error("Gagal sync:", error);
+                document.getElementById('sync-status').classList.replace('bg-green-500', 'bg-red-500');
+            });
+        }
+
+        async function saveToCloud() {
+            if (currentUser && db) {
+                const docRef = doc(db, 'artifacts', myAppId, 'public', 'data', 'settings', appSettings.syncCode);
+                try {
+                    await setDoc(docRef, appSettings, { merge: true });
+                    document.getElementById('sync-status').classList.replace('bg-red-500', 'bg-green-500');
+                } catch(e) {
+                    console.error("Gagal simpan ke cloud", e);
+                }
+            }
+        }
+
+        // --- UI LOGIC ---
         function updateClock() {
             const now = new Date();
             const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
@@ -291,16 +311,29 @@
             document.getElementById('mosque-name-display').textContent = appSettings.mosqueName;
             document.getElementById('marquee-display').textContent = appSettings.marquee;
             
-            // Perbaikan URL YouTube agar kompatibel dengan TV (menghindari error 153)
             const frame = document.getElementById('live-stream');
             const newSrc = `https://www.youtube.com/embed/${appSettings.ytId}?autoplay=1&mute=1&loop=1&playlist=${appSettings.ytId}&controls=0&rel=0&enablejsapi=1&origin=https://www.youtube.com`;
             if (frame.src !== newSrc) frame.src = newSrc;
 
             if (appSettings.theme === 'dark') {
-                document.getElementById('main-container').classList.replace('day-theme', 'dark-theme');
+                document.getElementById('app-body').classList.replace('day-theme', 'dark-theme');
             } else {
-                document.getElementById('main-container').classList.replace('dark-theme', 'day-theme');
+                document.getElementById('app-body').classList.replace('dark-theme', 'day-theme');
             }
+        }
+
+        function renderPrayerList() {
+            const container = document.getElementById('prayer-list-container');
+            container.innerHTML = '';
+            prayerKeys.forEach(p => {
+                const isActive = (p === currentNextPrayer) ? 'active' : '';
+                container.innerHTML += `
+                    <div class="prayer-item flex justify-between items-center ${isActive}">
+                        <span class="prayer-name text-sm md:text-base opacity-70 uppercase tracking-widest font-semibold">${prayerLabels[p]}</span>
+                        <span class="prayer-time text-2xl md:text-3xl font-bold font-mono tracking-tighter opacity-90">${prayerData[p]}</span>
+                    </div>
+                `;
+            });
         }
 
         function checkLogic(now) {
@@ -315,20 +348,29 @@
                 if (pDate > now) { next = p; target = pDate; break; }
             }
 
+            if (!next) {
+                next = "Fajr";
+                const [h, m] = prayerData["Fajr"].split(':');
+                target = new Date(now); target.setDate(target.getDate() + 1); target.setHours(h, m, 0);
+            }
+
             if (next) {
+                if (currentNextPrayer !== next) {
+                    currentNextPrayer = next;
+                    renderPrayerList(); 
+                }
+
                 const diff = target - now;
                 const hh = Math.floor(diff / 3600000);
                 const mm = Math.floor((diff % 3600000) / 60000);
                 const ss = Math.floor((diff % 60000) / 1000);
                 
-                document.getElementById('next-prayer-name').textContent = `Menuju ${prayerIndo[next]}`;
+                document.getElementById('next-prayer-label').textContent = `Menuju ${prayerLabels[next]}`;
                 document.getElementById('countdown-time').textContent = `-${hh.toString().padStart(2,'0')}:${mm.toString().padStart(2,'0')}:${ss.toString().padStart(2,'0')}`;
                 
-                // Alert 2 menit sebelum
-                document.getElementById('adhan-warning').style.display = (diff < 120000) ? 'flex' : 'none';
-                document.getElementById('warning-name').textContent = prayerIndo[next];
+                document.getElementById('adhan-warning').style.display = (diff < 120000 && diff > 0) ? 'flex' : 'none';
+                document.getElementById('warning-name').textContent = prayerLabels[next];
 
-                // Kunci Layar saat waktu tiba
                 if (now.getHours() == target.getHours() && now.getMinutes() == target.getMinutes() && now.getSeconds() == 0) {
                     toggleLock(true);
                 }
@@ -336,38 +378,28 @@
         }
 
         function toggleLock(show) {
-            document.getElementById('prayer-lock-overlay').style.display = show ? 'flex' : 'none';
-            if (show) setTimeout(() => toggleLock(false), 600000); // Lepas kunci setelah 10 menit
+            document.getElementById('prayer-lock').style.display = show ? 'flex' : 'none';
+            if (show) setTimeout(() => toggleLock(false), 600000);
         }
 
         async function fetchPrayers(lat, lon) {
-            const url = `https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=11`;
             try {
-                const res = await fetch(url);
+                const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=11`);
                 const json = await res.json();
                 prayerData = json.data.timings;
                 
                 document.getElementById('location-display').textContent = json.data.meta.timezone.replace("_", " ");
                 document.getElementById('date-gregorian').textContent = json.data.date.readable;
                 document.getElementById('date-hijri').textContent = json.data.date.hijri.day + " " + json.data.date.hijri.month.en + " " + json.data.date.hijri.year;
-
-                const container = document.getElementById('prayer-times-container');
-                container.innerHTML = '';
-                prayerNames.forEach(p => {
-                    container.innerHTML += `
-                        <div class="prayer-item">
-                            <span class="font-bold opacity-70 uppercase text-xs">${prayerIndo[p]}</span>
-                            <span class="text-2xl font-black">${prayerData[p]}</span>
-                        </div>`;
-                });
-            } catch (e) { console.error("API Error", e); }
+                renderPrayerList();
+            } catch (e) { console.error(e); }
         }
 
         function handleLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (p) => fetchPrayers(p.coords.latitude, p.coords.longitude),
-                    () => fetchPrayers(-6.2088, 106.8456) // Fallback Jakarta
+                    () => fetchPrayers(-6.2088, 106.8456)
                 );
             } else { fetchPrayers(-6.2088, 106.8456); }
         }
@@ -377,35 +409,50 @@
                 const res = await fetch('https://quran-api.santrikoding.com/api/random');
                 const data = await res.json();
                 document.getElementById('ayat-text').textContent = data.ar;
-                document.getElementById('ayat-translation').textContent = `"${data.idn}" - ${data.surah.nama_latin}:${data.nomor}`;
-            } catch (e) { console.error(e); }
+                document.getElementById('ayat-translation').textContent = `"${data.idn}"`;
+                document.getElementById('ayat-surah').textContent = `QS. ${data.surah.nama_latin} : ${data.nomor}`;
+            } catch (e) {}
         }
 
-        // --- UI EVENTS ---
-
-        document.getElementById('settings-btn').onclick = () => {
+        // --- EVENT LISTENERS ---
+        document.getElementById('settings-btn').addEventListener('click', () => {
+            document.getElementById('input-sync').value = appSettings.syncCode;
             document.getElementById('input-mosque').value = appSettings.mosqueName;
             document.getElementById('input-yt').value = appSettings.ytId;
             document.getElementById('input-marquee').value = appSettings.marquee;
+            document.querySelector(`input[name="theme"][value="${appSettings.theme}"]`).checked = true;
             document.getElementById('settings-modal').style.display = 'flex';
-        };
+        });
 
-        document.getElementById('close-btn').onclick = () => {
+        document.getElementById('close-btn').addEventListener('click', () => {
             document.getElementById('settings-modal').style.display = 'none';
-        };
+        });
 
-        document.getElementById('save-btn').onclick = () => {
+        document.getElementById('save-btn').addEventListener('click', () => {
+            const oldSyncCode = appSettings.syncCode;
+            
+            appSettings.syncCode = document.getElementById('input-sync').value.toUpperCase().trim() || "MASJID-01";
             appSettings.mosqueName = document.getElementById('input-mosque').value;
             appSettings.ytId = document.getElementById('input-yt').value;
             appSettings.marquee = document.getElementById('input-marquee').value;
             appSettings.theme = document.querySelector('input[name="theme"]:checked').value;
             
-            localStorage.setItem('masjid_tv_settings', JSON.stringify(appSettings));
+            localStorage.setItem('masjid_tv_settings_v2', JSON.stringify(appSettings));
             applyUI();
+            
+            // Jika kode sinkronisasi diganti, buat koneksi baru
+            if (oldSyncCode !== appSettings.syncCode) {
+                listenToCloud();
+            }
+            
+            // Simpan perubahan ke Cloud agar TV lain yang connect ikut berubah
+            saveToCloud();
+            
             document.getElementById('settings-modal').style.display = 'none';
-        };
+        });
 
-        window.onload = init;
+        // Jalankan aplikasi saat siap
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
