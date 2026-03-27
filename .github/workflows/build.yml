@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      # Mencegah terminal macet karena menunggu input keyboard (Enter)
       CI: true 
 
     steps:
@@ -52,11 +51,12 @@ jobs:
           npm pkg set scripts.build="echo 'No build required'"
           npm pkg set scripts.tauri="tauri"
 
-      - name: Build APK Android
-        run: npx tauri android build --apk
+      # MENGUBAH KE MODE DEBUG AGAR OTOMATIS SIGNED DAN BISA DIINSTAL
+      - name: Build APK Android (Debug Mode)
+        run: npx tauri android build --debug --apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Aplikasi-Jadwal-Sholat
-          path: src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk
+          name: Aplikasi-Jadwal-Sholat-Debug
+          path: src-tauri/gen/android/app/build/outputs/apk/universal/debug/*.apk
