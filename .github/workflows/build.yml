@@ -47,8 +47,10 @@ jobs:
       - name: Init Tauri Android
         run: npx tauri android init || true
 
-      - name: Bypass Frontend Build
-        run: npm pkg set scripts.build="echo 'No build required'"
+      - name: Set up NPM Scripts
+        run: |
+          npm pkg set scripts.build="echo 'No build required'"
+          npm pkg set scripts.tauri="tauri"
 
       - name: Build APK Android
         run: npx tauri android build --apk
