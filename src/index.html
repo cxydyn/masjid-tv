@@ -9,317 +9,401 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
-        html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
-        body { font-family: 'Poppins', sans-serif; transition: background-color 0.5s ease; }
-        .main-container { color: white; padding: 1.5rem; width: 100%; min-height: 100vh; box-sizing: border-box; display: flex; flex-direction: column; transition: background 0.5s ease; }
-        .main-container.day-theme { background: linear-gradient(135deg, #0ea5e9, #2563eb); }
-        .main-container.dark-theme { background: linear-gradient(135deg, #1e3a8a, #0f172a); }
-        .glass-box { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background-color: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 1.5rem; flex-grow: 1; min-height: 0; }
-        .right-panel { position: relative; width: 100%; border-radius: 12px; overflow: hidden; background-color: #000; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
-        /* Player YouTube Container */
-        #yt-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        .main-clock-box { background-color: white; color: #1e3a8a; border-radius: 12px; padding: 1.5rem; text-align: center; }
-        .dark-theme .main-clock-box { background-color: #1f2937; color: white; }
-        .time { font-size: 5rem; font-weight: 800; line-height: 1; }
-        .prayer-lock { position: fixed; inset: 0; background: black; z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        #settings-modal { background: rgba(0,0,0,0.7); display: none; z-index: 200; }
-        input, select, textarea { color: #000 !important; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* Mencegah scroll agar pas di TV */
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #000;
+            transition: background-color 0.5s ease;
+        }
+        .main-container {
+            color: white;
+            padding: 1rem;
+            width: 100vw;
+            height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.5s ease;
+        }
+
+        /* Tema Siang */
+        .main-container.day-theme {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        }
+        .day-theme .glass-box {
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .day-theme .main-clock-box {
+            background-color: white;
+            color: #1e3a8a;
+        }
+
+        /* Tema Malam */
+        .main-container.dark-theme {
+            background: linear-gradient(135deg, #111827, #000000);
+        }
+        .dark-theme .glass-box {
+            background-color: rgba(31, 41, 55, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .dark-theme .main-clock-box {
+            background-color: #1f2937;
+            color: white;
+        }
+
+        .glass-box {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* GRID SYSTEM: Responsive Landscape/Portrait */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1.8fr 1fr; 
+            gap: 1rem;
+            flex-grow: 1;
+            min-height: 0;
+        }
+
+        @media (orientation: portrait) {
+            .content-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1.5fr;
+            }
+            .time { font-size: 15vw !important; }
+            .countdown-time { font-size: 8vw !important; }
+        }
+
+        .right-panel {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            background-color: #000;
+        }
+        .right-panel iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        .main-clock-box {
+            padding: 1.2rem;
+            text-align: center;
+            border-radius: 16px;
+        }
+        .time {
+            font-size: 5.5vw;
+            font-weight: 800;
+            line-height: 1;
+        }
+        .countdown-time {
+            font-size: 3vw;
+            font-weight: 700;
+            color: #fbbf24;
+        }
+
+        #prayer-times-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            height: 100%;
+        }
+
+        .prayer-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.4rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .prayer-item:last-child { border: 0; }
+        
+        #prayer-lock-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle, #000, #111);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        input, textarea { color: #000 !important; }
     </style>
 </head>
-<body>
+<body class="day-theme">
 
     <div id="main-container" class="main-container day-theme">
-        <!-- Header -->
-        <div class="flex justify-between items-center border-b border-white/20 pb-4">
+        <!-- HEADER -->
+        <div class="flex justify-between items-center mb-4 border-b border-white/20 pb-2">
             <div>
-                <h2 id="date-gregorian" class="text-xl font-bold">...</h2>
-                <p id="date-hijri" class="text-sm opacity-80">...</p>
+                <h2 id="mosque-name-display" class="text-2xl font-black uppercase tracking-tight">Masjid Ar-Rahim</h2>
+                <p id="location-display" class="text-sm opacity-70 italic">Mencari lokasi...</p>
             </div>
-            <div class="flex items-center gap-4 text-right">
+            <div class="text-right flex items-center gap-4">
                 <div>
-                    <h2 id="mosque-name-display" class="text-xl font-bold uppercase tracking-wide">Masjid Ar-Rahim</h2>
-                    <p id="location-display" class="text-sm opacity-80">Mencari lokasi...</p>
+                    <h2 id="date-gregorian" class="text-lg font-bold">...</h2>
+                    <p id="date-hijri" class="text-sm opacity-80">...</p>
                 </div>
-                <button onclick="toggleSettings(true)" class="p-2 bg-white/10 hover:bg-white/20 rounded-full transition">
+                <button id="settings-btn" class="p-2 bg-white/10 rounded-full hover:bg-white/20">
                     <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
             </div>
         </div>
 
-        <!-- Konten -->
+        <!-- MAIN CONTENT -->
         <div class="content-grid">
-            <div class="right-panel">
-                <!-- Elemen untuk API YouTube -->
-                <div id="yt-player"></div>
-                
-                <!-- Adzan Alert -->
-                <div id="adzan-alert" class="absolute inset-0 bg-amber-500 text-slate-900 hidden flex-col items-center justify-center text-center p-8 z-50">
-                    <h1 class="text-5xl font-black mb-4 uppercase">Waktu Sholat Tiba</h1>
-                    <p id="next-sholat-alert" class="text-3xl font-bold uppercase"></p>
+            <div class="right-panel shadow-2xl">
+                <iframe id="live-stream" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                <div id="adhan-warning" class="absolute inset-0 bg-amber-500 text-blue-900 hidden flex-col items-center justify-center p-4 text-center z-50">
+                    <h1 class="text-6xl font-black uppercase mb-4">Waktu Sholat Tiba</h1>
+                    <p id="warning-name" class="text-4xl font-bold uppercase"></p>
                 </div>
             </div>
-            
+
             <div class="flex flex-col gap-4">
                 <div class="main-clock-box shadow-xl">
-                    <p class="text-sm font-bold opacity-60 uppercase tracking-widest">Waktu Sekarang</p>
-                    <div id="digital-clock" class="time">00:00</div>
-                    <p id="digital-seconds" class="text-2xl font-bold opacity-60">00</p>
+                    <div id="main-clock" class="time">00:00</div>
+                    <p class="text-lg opacity-60 uppercase font-bold tracking-widest mt-2">Waktu Sekarang</p>
                 </div>
 
-                <div class="glass-box p-6 text-center">
-                    <p id="label-next" class="text-amber-300 font-bold uppercase tracking-tighter">Memuat...</p>
-                    <div id="countdown-timer" class="text-4xl font-black tabular-nums mt-1">-00:00:00</div>
+                <div class="glass-box p-4 text-center">
+                    <p id="next-prayer-name" class="font-bold text-amber-300 uppercase italic">Menghitung...</p>
+                    <div id="countdown-time" class="countdown-time">-00:00:00</div>
                 </div>
 
-                <div id="sholat-list" class="glass-box p-4 space-y-2 flex-grow">
-                    <!-- List Sholat Disini -->
+                <div class="glass-box flex-grow overflow-hidden flex flex-col">
+                    <div id="prayer-times-container" class="flex-grow">
+                        <!-- Jadwal Injected Here -->
+                    </div>
+                    <!-- Ayat Section -->
+                    <div class="p-4 border-t border-white/10 text-center bg-black/10">
+                         <p id="ayat-text" class="text-right text-xl mb-2 font-serif" dir="rtl"></p>
+                         <p id="ayat-translation" class="text-xs italic opacity-80"></p>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Running Text -->
-        <div class="mt-6 bg-black/40 p-3 rounded-xl overflow-hidden glass-box">
-            <marquee id="running-text" class="text-2xl font-medium tracking-wide">Selamat Datang di Masjid Kami - Silakan luruskan dan rapatkan shaf saat sholat berjamaah.</marquee>
+        <div class="mt-4 bg-black/30 p-2 rounded-xl glass-box overflow-hidden">
+            <marquee id="marquee-display" class="text-2xl font-medium tracking-wide">Luruskan dan rapatkan shaf sholat.</marquee>
         </div>
     </div>
 
-    <!-- Lock Screen Sholat -->
-    <div id="prayer-lock" class="prayer-lock">
-        <h1 class="text-4xl font-bold text-amber-500 mb-8 uppercase tracking-widest">Waktunya Beribadah</h1>
-        <div id="lock-clock" class="text-9xl font-black mb-4">00:00</div>
-        <p class="text-2xl opacity-70 italic">"Sesungguhnya sholat itu mencegah dari perbuatan keji dan munkar"</p>
+    <!-- PRAYER LOCK OVERLAY -->
+    <div id="prayer-lock-overlay">
+        <h1 class="text-5xl font-black text-amber-500 mb-8 uppercase tracking-widest">Waktunya Berjamaah</h1>
+        <div id="lock-clock" class="text-9xl font-black text-white">00:00</div>
+        <p class="text-2xl opacity-60 mt-8 italic">"Harap matikan suara HP Anda"</p>
     </div>
 
-    <!-- Modal Pengaturan -->
-    <div id="settings-modal" class="fixed inset-0 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-lg rounded-2xl p-8 shadow-2xl text-slate-800 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-black uppercase">Pengaturan App</h2>
-                <button onclick="toggleSettings(false)" class="text-slate-400 hover:text-red-500">
-                    <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
-            
-            <div class="space-y-4 text-left">
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[2000] p-4">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-md text-slate-900 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h3 class="text-2xl font-black mb-6 uppercase">Pengaturan Masjid</h3>
+            <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold uppercase opacity-60 mb-1">Nama Masjid</label>
-                    <input type="text" id="input-mosque" class="w-full bg-slate-100 p-3 rounded-lg border-0 focus:ring-2 focus:ring-blue-500">
+                    <label class="block text-xs font-bold uppercase opacity-50 mb-1">Nama Masjid</label>
+                    <input type="text" id="input-mosque" class="w-full p-4 bg-slate-100 rounded-xl border-0 font-bold">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase opacity-60 mb-1">ID Video YouTube</label>
-                    <input type="text" id="input-youtube" class="w-full bg-slate-100 p-3 rounded-lg border-0 focus:ring-2 focus:ring-blue-500">
-                    <p class="text-[10px] mt-1 text-slate-500 italic">*ID: 7pA7vU3JTAw (Rodja TV)</p>
+                    <label class="block text-xs font-bold uppercase opacity-50 mb-1">YouTube Video ID</label>
+                    <input type="text" id="input-yt" class="w-full p-4 bg-slate-100 rounded-xl border-0 font-mono" placeholder="7pA7vU3JTAw">
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold uppercase opacity-60 mb-1">Kota</label>
-                        <input type="text" id="input-city" class="w-full bg-slate-100 p-3 rounded-lg border-0 focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase opacity-60 mb-1">Negara</label>
-                        <input type="text" id="input-country" class="w-full bg-slate-100 p-3 rounded-lg border-0 focus:ring-2 focus:ring-blue-500">
+                <div>
+                    <label class="block text-xs font-bold uppercase opacity-50 mb-1">Running Text (Pesan)</label>
+                    <textarea id="input-marquee" class="w-full p-4 bg-slate-100 rounded-xl border-0 h-24"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase opacity-50 mb-1">Tema Tampilan</label>
+                    <div class="grid grid-cols-2 gap-2 mt-1">
+                        <label class="flex items-center p-3 rounded-xl border border-slate-200 cursor-pointer">
+                            <input type="radio" name="theme" value="auto" checked> <span class="ml-2 font-bold">Auto</span>
+                        </label>
+                        <label class="flex items-center p-3 rounded-xl border border-slate-200 cursor-pointer">
+                            <input type="radio" name="theme" value="dark"> <span class="ml-2 font-bold">Dark</span>
+                        </label>
                     </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold uppercase opacity-60 mb-1">Teks Berjalan</label>
-                    <textarea id="input-marquee" class="w-full bg-slate-100 p-3 rounded-lg border-0 focus:ring-2 focus:ring-blue-500 h-24"></textarea>
+                <div class="flex gap-4 pt-4">
+                    <button id="save-btn" class="flex-grow bg-blue-600 text-white font-black py-4 rounded-2xl tracking-widest">SIMPAN</button>
+                    <button id="close-btn" class="bg-slate-200 px-6 rounded-2xl font-bold">BATAL</button>
                 </div>
-                <button onclick="saveAllSettings()" class="w-full bg-blue-600 text-white font-black py-4 rounded-xl shadow-lg hover:bg-blue-700 transition uppercase tracking-widest">Simpan Pengaturan</button>
             </div>
         </div>
     </div>
-
-    <!-- YouTube IFrame API Script -->
-    <script src="https://www.youtube.com/iframe_api"></script>
 
     <script>
+        // --- DATA & CONFIG ---
         let appSettings = {
             mosqueName: "Masjid Ar-Rahim",
-            city: "Jakarta",
-            country: "Indonesia",
-            youtubeId: "7pA7vU3JTAw", 
-            marquee: "Selamat Datang di Masjid Kami. Harap matikan ponsel saat berada di dalam ruang sholat.",
+            ytId: "7pA7vU3JTAw", // Rodja TV Default
+            marquee: "Selamat datang di Masjid Kami. Harap matikan suara ponsel Anda saat berada di dalam ruang sholat. Luruskan dan rapatkan barisan shaf.",
             theme: "auto",
-            lockDuration: 10
+            city: "Jakarta"
         };
 
         const prayerNames = ["Imsak", "Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
-        const prayerIndo = { "Imsak": "Imsak", "Fajr": "Subuh", "Sunrise": "Terbit", "Dhuhr": "Dzuhur", "Asr": "Ashar", "Maghrib": "Maghrib", "Isha": "Isya" };
-        let prayerTimesData = {};
-        let ytPlayer;
+        const prayerIndo = { Imsak:"Imsak", Fajr:"Subuh", Sunrise:"Terbit", Dhuhr:"Dzuhur", Asr:"Ashar", Maghrib:"Maghrib", Isha:"Isya" };
+        let prayerData = {};
 
-        // --- YOUTUBE API LOGIC ---
-        function onYouTubeIframeAPIReady() {
-            createYTPlayer(appSettings.youtubeId);
-        }
-
-        function createYTPlayer(videoId) {
-            if (ytPlayer) {
-                ytPlayer.destroy();
-            }
-
-            ytPlayer = new YT.Player('yt-player', {
-                height: '100%',
-                width: '100%',
-                videoId: videoId,
-                playerVars: {
-                    'autoplay': 1,
-                    'mute': 1,
-                    'controls': 0,
-                    'rel': 0,
-                    'showinfo': 0,
-                    'modestbranding': 1,
-                    'loop': 1,
-                    'playlist': videoId,
-                    'enablejsapi': 1,
-                    'origin': 'https://www.youtube.com' // Memaksa origin resmi
-                },
-                events: {
-                    'onReady': onPlayerReady,
-                    'onError': onPlayerError
-                }
-            });
-        }
-
-        function onPlayerReady(event) {
-            event.target.playVideo();
-        }
-
-        function onPlayerError(event) {
-            console.error("YouTube Error Code:", event.data);
-            // Jika masih error 153, kita coba fallback ke URL embed langsung dengan parameter berbeda
-            if (event.data == 153 || event.data == 101) {
-                const container = document.getElementById('yt-player');
-                container.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${appSettings.youtubeId}?autoplay=1&mute=1&controls=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-            }
-        }
-
-        // --- CORE APP LOGIC ---
+        // --- CORE FUNCTIONS ---
 
         function init() {
-            const saved = localStorage.getItem('masjid_settings');
-            if (saved) {
-                appSettings = JSON.parse(saved);
-            }
+            const saved = localStorage.getItem('masjid_tv_settings');
+            if (saved) appSettings = JSON.parse(saved);
+            
             applyUI();
             updateClock();
-            fetchPrayerTimes();
             setInterval(updateClock, 1000);
-            setInterval(fetchPrayerTimes, 3600000); 
+            
+            handleLocation(); // Ambil Lokasi & Jadwal
+            fetchRandomAyat();
+            setInterval(fetchRandomAyat, 600000); // Ganti ayat tiap 10 menit
         }
 
         function updateClock() {
             const now = new Date();
-            document.getElementById('digital-clock').textContent = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('digital-seconds').textContent = now.getSeconds().toString().padStart(2, '0');
-            document.getElementById('lock-clock').textContent = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            checkPrayerLogic(now);
-        }
-
-        async function fetchPrayerTimes() {
-            const date = new Date();
-            const url = `https://api.aladhan.com/v1/timingsByCity/${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()}?city=${appSettings.city}&country=${appSettings.country}&method=11`;
-            
-            try {
-                const res = await fetch(url);
-                const data = await res.json();
-                prayerTimesData = data.data.timings;
-                
-                document.getElementById('date-gregorian').textContent = data.data.date.readable;
-                document.getElementById('date-hijri').textContent = `${data.data.date.hijri.day} ${data.data.date.hijri.month.en} ${data.data.date.hijri.year}`;
-                document.getElementById('location-display').textContent = `${appSettings.city}, ${appSettings.country}`;
-                renderPrayerList();
-            } catch (e) { console.error("API Error", e); }
-        }
-
-        function renderPrayerList() {
-            const list = document.getElementById('sholat-list');
-            list.innerHTML = '';
-            prayerNames.forEach(p => {
-                const time = prayerTimesData[p];
-                const item = document.createElement('div');
-                item.className = "flex justify-between items-center p-3 rounded-lg border border-white/5 bg-black/10";
-                item.innerHTML = `<span class="font-bold opacity-80">${prayerIndo[p]}</span><span class="text-xl font-black">${time}</span>`;
-                list.appendChild(item);
-            });
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('main-clock').textContent = timeStr;
+            document.getElementById('lock-clock').textContent = timeStr;
+            checkLogic(now);
         }
 
         function applyUI() {
             document.getElementById('mosque-name-display').textContent = appSettings.mosqueName;
-            document.getElementById('running-text').textContent = appSettings.marquee;
+            document.getElementById('marquee-display').textContent = appSettings.marquee;
             
-            // Re-init YouTube player jika ID berubah
-            if (window.YT && window.YT.Player) {
-                createYTPlayer(appSettings.youtubeId);
+            // Perbaikan URL YouTube agar kompatibel dengan TV (menghindari error 153)
+            const frame = document.getElementById('live-stream');
+            const newSrc = `https://www.youtube.com/embed/${appSettings.ytId}?autoplay=1&mute=1&loop=1&playlist=${appSettings.ytId}&controls=0&rel=0&enablejsapi=1&origin=https://www.youtube.com`;
+            if (frame.src !== newSrc) frame.src = newSrc;
+
+            if (appSettings.theme === 'dark') {
+                document.getElementById('main-container').classList.replace('day-theme', 'dark-theme');
+            } else {
+                document.getElementById('main-container').classList.replace('dark-theme', 'day-theme');
             }
         }
 
-        function checkPrayerLogic(now) {
-            if (!prayerTimesData.Fajr) return;
-            const mainPrayers = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
-            let foundNext = false;
+        function checkLogic(now) {
+            if (!prayerData.Fajr) return;
+            const prayers = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
+            let next = null;
+            let target = null;
 
-            for (let p of mainPrayers) {
-                const [h, m] = prayerTimesData[p].split(':');
-                const pDate = new Date(now);
-                pDate.setHours(h, m, 0);
-                const diff = pDate - now;
+            for (let p of prayers) {
+                const [h, m] = prayerData[p].split(':');
+                const pDate = new Date(now); pDate.setHours(h, m, 0);
+                if (pDate > now) { next = p; target = pDate; break; }
+            }
 
-                if (diff > 0 && diff < 120000) {
-                    document.getElementById('adzan-alert').style.display = 'flex';
-                    document.getElementById('next-sholat-alert').textContent = prayerIndo[p];
-                } else if (diff <= 0 && diff > -60000) {
-                    document.getElementById('adzan-alert').style.display = 'flex';
-                } else {
-                    document.getElementById('adzan-alert').style.display = 'none';
-                }
+            if (next) {
+                const diff = target - now;
+                const hh = Math.floor(diff / 3600000);
+                const mm = Math.floor((diff % 3600000) / 60000);
+                const ss = Math.floor((diff % 60000) / 1000);
+                
+                document.getElementById('next-prayer-name').textContent = `Menuju ${prayerIndo[next]}`;
+                document.getElementById('countdown-time').textContent = `-${hh.toString().padStart(2,'0')}:${mm.toString().padStart(2,'0')}:${ss.toString().padStart(2,'0')}`;
+                
+                // Alert 2 menit sebelum
+                document.getElementById('adhan-warning').style.display = (diff < 120000) ? 'flex' : 'none';
+                document.getElementById('warning-name').textContent = prayerIndo[next];
 
-                if (now.getHours() == h && now.getMinutes() == m && now.getSeconds() < 2) {
-                    startLockScreen();
-                }
-
-                if (diff > 0 && !foundNext) {
-                    foundNext = true;
-                    document.getElementById('label-next').textContent = `Menuju ${prayerIndo[p]}`;
-                    const hh = Math.floor(diff / 3600000);
-                    const mm = Math.floor((diff % 3600000) / 60000);
-                    const ss = Math.floor((diff % 60000) / 1000);
-                    document.getElementById('countdown-timer').textContent = `-${hh.toString().padStart(2,'0')}:${mm.toString().padStart(2,'0')}:${ss.toString().padStart(2,'0')}`;
+                // Kunci Layar saat waktu tiba
+                if (now.getHours() == target.getHours() && now.getMinutes() == target.getMinutes() && now.getSeconds() == 0) {
+                    toggleLock(true);
                 }
             }
         }
 
-        function startLockScreen() {
-            const lock = document.getElementById('prayer-lock');
-            lock.style.display = 'flex';
-            setTimeout(() => { lock.style.display = 'none'; }, appSettings.lockDuration * 60000);
+        function toggleLock(show) {
+            document.getElementById('prayer-lock-overlay').style.display = show ? 'flex' : 'none';
+            if (show) setTimeout(() => toggleLock(false), 600000); // Lepas kunci setelah 10 menit
         }
 
-        function toggleSettings(show) {
-            const modal = document.getElementById('settings-modal');
-            modal.style.display = show ? 'flex' : 'none';
-            if (show) {
-                document.getElementById('input-mosque').value = appSettings.mosqueName;
-                document.getElementById('input-city').value = appSettings.city;
-                document.getElementById('input-country').value = appSettings.country;
-                document.getElementById('input-youtube').value = appSettings.youtubeId;
-                document.getElementById('input-marquee').value = appSettings.marquee;
-            }
+        async function fetchPrayers(lat, lon) {
+            const url = `https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=11`;
+            try {
+                const res = await fetch(url);
+                const json = await res.json();
+                prayerData = json.data.timings;
+                
+                document.getElementById('location-display').textContent = json.data.meta.timezone.replace("_", " ");
+                document.getElementById('date-gregorian').textContent = json.data.date.readable;
+                document.getElementById('date-hijri').textContent = json.data.date.hijri.day + " " + json.data.date.hijri.month.en + " " + json.data.date.hijri.year;
+
+                const container = document.getElementById('prayer-times-container');
+                container.innerHTML = '';
+                prayerNames.forEach(p => {
+                    container.innerHTML += `
+                        <div class="prayer-item">
+                            <span class="font-bold opacity-70 uppercase text-xs">${prayerIndo[p]}</span>
+                            <span class="text-2xl font-black">${prayerData[p]}</span>
+                        </div>`;
+                });
+            } catch (e) { console.error("API Error", e); }
         }
 
-        function saveAllSettings() {
+        function handleLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (p) => fetchPrayers(p.coords.latitude, p.coords.longitude),
+                    () => fetchPrayers(-6.2088, 106.8456) // Fallback Jakarta
+                );
+            } else { fetchPrayers(-6.2088, 106.8456); }
+        }
+
+        async function fetchRandomAyat() {
+            try {
+                const res = await fetch('https://quran-api.santrikoding.com/api/random');
+                const data = await res.json();
+                document.getElementById('ayat-text').textContent = data.ar;
+                document.getElementById('ayat-translation').textContent = `"${data.idn}" - ${data.surah.nama_latin}:${data.nomor}`;
+            } catch (e) { console.error(e); }
+        }
+
+        // --- UI EVENTS ---
+
+        document.getElementById('settings-btn').onclick = () => {
+            document.getElementById('input-mosque').value = appSettings.mosqueName;
+            document.getElementById('input-yt').value = appSettings.ytId;
+            document.getElementById('input-marquee').value = appSettings.marquee;
+            document.getElementById('settings-modal').style.display = 'flex';
+        };
+
+        document.getElementById('close-btn').onclick = () => {
+            document.getElementById('settings-modal').style.display = 'none';
+        };
+
+        document.getElementById('save-btn').onclick = () => {
             appSettings.mosqueName = document.getElementById('input-mosque').value;
-            appSettings.city = document.getElementById('input-city').value;
-            appSettings.country = document.getElementById('input-country').value;
-            appSettings.youtubeId = document.getElementById('input-youtube').value;
+            appSettings.ytId = document.getElementById('input-yt').value;
             appSettings.marquee = document.getElementById('input-marquee').value;
-
-            localStorage.setItem('masjid_settings', JSON.stringify(appSettings));
+            appSettings.theme = document.querySelector('input[name="theme"]:checked').value;
+            
+            localStorage.setItem('masjid_tv_settings', JSON.stringify(appSettings));
             applyUI();
-            fetchPrayerTimes();
-            toggleSettings(false);
-        }
+            document.getElementById('settings-modal').style.display = 'none';
+        };
 
         window.onload = init;
     </script>
