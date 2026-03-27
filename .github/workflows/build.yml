@@ -1,0 +1,55 @@
+name: Build Tauri Android APK
+
+# Trigger build saat ada kode yang di-push ke branch main
+# atau bisa dijalankan secara manual (workflow_dispatch)
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Java (JDK 17 untuk Android)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android, armv7-linux-androideabi, i686-linux-android, x86_64-linux-android
+
+      - name: Install NDK (Dibutuhkan oleh Tauri Android)
+        run: |
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "ndk;25.2.9519653"
+          echo "NDK_HOME=$ANDROID_HOME/ndk/25.2.9519653" >> $GITHUB_ENV
+
+      - name: Install Frontend Dependencies
+        run: npm install
+
+      # Menambahkan target Android ke project Tauri (jika belum ada)
+      - name: Init Tauri Android
+        run: npm run tauri android init
+        continue-on-error: true # Abaikan jika sudah di-init sebelumnya
+
+      - name: Build APK Android
+        run: npm run tauri android build -- --apk
+
+      # Mengupload hasil .apk agar bisa didownload oleh Anda
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-masjid-release-apk
+          path: src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk
