@@ -1,7 +1,5 @@
 name: Build Tauri Android APK
 
-# Trigger build saat ada kode yang di-push ke branch main
-# atau bisa dijalankan secara manual (workflow_dispatch)
 on:
   push:
     branches: [ main ]
@@ -10,6 +8,9 @@ on:
 jobs:
   build-android:
     runs-on: ubuntu-latest
+    env:
+      # Perintah ini akan menghilangkan warning/peringatan kuning dari GitHub
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout repository
@@ -18,9 +19,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
-      - name: Setup Java (JDK 17 untuk Android)
+      - name: Setup Java (JDK 17)
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
@@ -31,28 +32,28 @@ jobs:
         with:
           targets: aarch64-linux-android, armv7-linux-androideabi, i686-linux-android, x86_64-linux-android
 
-      - name: Install NDK (Dibutuhkan oleh Tauri Android)
+      - name: Install NDK (Versi terbaru 26)
         run: |
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "ndk;25.2.9519653"
-          echo "NDK_HOME=$ANDROID_HOME/ndk/25.2.9519653" >> $GITHUB_ENV
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "ndk;26.1.10909125"
+          echo "NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125" >> $GITHUB_ENV
 
       - name: Install Frontend Dependencies
-        run: npm install
+        run: |
+          if [ ! -f "package.json" ]; then npm init -y && npm install -D @tauri-apps/cli; fi
+          npm install
 
-      - name: Fix Tauri Identifier
-        run: sed -i 's/"com.tauri.dev"/"com.masjid.tv"/g' src-tauri/tauri.conf.json
+      - name: Fix Tauri Identifier (Anti-Crash)
+        run: sed -i 's/"com.tauri.dev"/"com.masjid.tv"/g' src-tauri/tauri.conf.json || true
 
-      # Menambahkan target Android ke project Tauri (jika belum ada)
       - name: Init Tauri Android
         run: npx tauri android init
-        continue-on-error: true # Abaikan jika sudah di-init sebelumnya
+        continue-on-error: true 
 
       - name: Build APK Android
         run: npx tauri android build --apk
 
-      # Mengupload hasil .apk agar bisa didownload oleh Anda
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-masjid-release-apk
+          name: Aplikasi-Jadwal-Sholat
           path: src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk
