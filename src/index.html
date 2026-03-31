@@ -116,13 +116,41 @@
 
         <div class="w-full lg:w-5/12 flex flex-col gap-4 md:gap-6 h-full min-h-0">
             <div class="glass-box p-4 md:p-5 shrink-0 flex flex-col relative overflow-hidden">
-                <div class="flex justify-between items-end mb-4 shrink-0">
-                    <div>
-                        <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">Menuju Sholat</p>
-                        <p id="label-next" class="text-lg md:text-xl font-black uppercase text-amber-400 tracking-wider">Memuat...</p>
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <!-- COUNTDOWN DIGITAL BARU -->
+                <div class="flex justify-between items-center mb-4 shrink-0">
+                    <div class="flex flex-col">
+                        <p class="text-[10px] md:text-xs font-bold uppercase tracking-widest text-slate-400 mb-1 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.8)]"></span>
+                            Menuju
+                        </p>
+                        <p id="label-next" class="text-xl md:text-2xl font-black uppercase text-white tracking-wider drop-shadow-md">Memuat...</p>
                     </div>
-                    <div id="countdown-timer" class="text-4xl md:text-5xl font-black tabular-nums text-white drop-shadow-md">-00:00:00</div>
+                    
+                    <div class="flex items-center gap-1.5 md:gap-2">
+                        <!-- Jam -->
+                        <div class="bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700/50 rounded-xl px-2 py-1.5 md:px-3 md:py-2 min-w-[50px] md:min-w-[65px] flex flex-col items-center justify-center shadow-inner">
+                            <span id="cd-hours" class="text-3xl md:text-4xl font-black font-mono text-white tracking-tighter drop-shadow-md">00</span>
+                            <span class="text-[9px] md:text-[10px] font-bold uppercase text-slate-400 tracking-widest mt-0.5">Jam</span>
+                        </div>
+                        <span class="text-xl md:text-2xl font-black text-slate-500 animate-pulse pb-3">:</span>
+                        <!-- Menit -->
+                        <div class="bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700/50 rounded-xl px-2 py-1.5 md:px-3 md:py-2 min-w-[50px] md:min-w-[65px] flex flex-col items-center justify-center shadow-inner">
+                            <span id="cd-minutes" class="text-3xl md:text-4xl font-black font-mono text-white tracking-tighter drop-shadow-md">00</span>
+                            <span class="text-[9px] md:text-[10px] font-bold uppercase text-slate-400 tracking-widest mt-0.5">Mnt</span>
+                        </div>
+                        <span class="text-xl md:text-2xl font-black text-slate-500 animate-pulse pb-3">:</span>
+                        <!-- Detik (Emas/Amber) -->
+                        <div class="bg-gradient-to-b from-slate-800 to-slate-900 border border-amber-500/30 rounded-xl px-2 py-1.5 md:px-3 md:py-2 min-w-[50px] md:min-w-[65px] flex flex-col items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.15)] relative overflow-hidden">
+                            <div class="absolute inset-0 bg-amber-500/10 animate-pulse"></div>
+                            <span id="cd-seconds" class="text-3xl md:text-4xl font-black font-mono text-amber-400 tracking-tighter drop-shadow-md z-10">00</span>
+                            <span class="text-[9px] md:text-[10px] font-bold uppercase text-amber-500/80 tracking-widest mt-0.5 z-10">Dtk</span>
+                        </div>
+                    </div>
                 </div>
+                <!-- END COUNTDOWN BARU -->
+
                 <div id="sholat-list" class="grid grid-cols-3 gap-2 w-full"></div>
             </div>
 
@@ -151,11 +179,12 @@
     </footer>
 
     <div id="prayer-lock" class="fullscreen-overlay z-[2000]">
-        <h1 class="text-4xl md:text-6xl font-black text-amber-500 mb-8 uppercase tracking-widest">Waktunya Beribadah</h1>
-        <div id="lock-clock" class="text-[10rem] md:text-[15rem] font-black font-mono text-white leading-none tracking-tighter">00:00</div>
+        <h1 class="text-4xl md:text-6xl font-black text-amber-500 mb-8 uppercase tracking-widest drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]">Waktunya Beribadah</h1>
+        <div id="lock-clock" class="text-[10rem] md:text-[15rem] font-black font-mono text-white leading-none tracking-tighter mb-4">00:00</div>
+        <p class="text-xl md:text-3xl opacity-80 mt-6 font-medium text-slate-300 tracking-wide">"Tinggalkan sejenak urusan dunia"</p>
     </div>
 
-    <div id="settings-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-[3000] p-4 backdrop-blur-md">
+    <div id="settings-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-[3000] p-4 md:p-6 backdrop-blur-md">
         <div class="bg-[#151822] border border-slate-700 rounded-3xl p-6 md:p-8 w-full max-w-4xl shadow-2xl max-h-[95vh] flex flex-col text-slate-200">
             <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-700 shrink-0">
                 <div>
@@ -272,17 +301,14 @@
             document.getElementById('running-text').textContent = window.appSettings.marquee;
             document.getElementById('location-display').textContent = `${window.appSettings.city}, ${window.appSettings.country}`;
 
-            // YouTube
             if (window.YT && window.YT.Player && typeof window.createYTPlayer === 'function') {
                 window.createYTPlayer(window.appSettings.youtubeId);
             }
 
-            // Agenda Embed (Cukup pake ID tanpa API Key)
             const idGcal = window.appSettings.gcalId || 'en.indonesian#holiday@group.v.calendar.google.com';
             const frameUrl = `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(idGcal)}&mode=AGENDA&showTitle=0&showNav=0&showDate=0&showPrint=0&showTabs=0&showCalendars=0&showTz=0&ctz=Asia%2FJakarta`;
             document.getElementById('ui-agenda-list').innerHTML = `<iframe src="${frameUrl}" class="w-full h-full border-0 gcal-dark" scrolling="no"></iframe>`;
 
-            // Children Grid
             const todayName = daysIndo[new Date().getDay()];
             document.getElementById('ui-day-name').textContent = todayName;
             const grid = document.getElementById('ui-children-grid');
@@ -329,13 +355,30 @@
                     setTimeout(() => { lock.style.display = 'none'; }, window.appSettings.lockDuration * 60000);
                 }
                 if (diff > 0 && !foundNext) {
-                    foundNext = true; document.getElementById('label-next').textContent = `Menuju ${prayerIndo[p]}`;
-                    const hh = Math.floor(diff / 3600000), mm = Math.floor((diff % 3600000) / 60000), ss = Math.floor((diff % 60000) / 1000);
-                    document.getElementById('countdown-timer').textContent = `-${hh.toString().padStart(2,'0')}:${mm.toString().padStart(2,'0')}:${ss.toString().padStart(2,'0')}`;
+                    foundNext = true; 
+                    
+                    document.getElementById('label-next').textContent = `${prayerIndo[p]}`;
+                    
+                    // Hitung mundur terpisah untuk tampilan Segmented Clock
+                    const hh = Math.floor(diff / 3600000);
+                    const mm = Math.floor((diff % 3600000) / 60000);
+                    const ss = Math.floor((diff % 60000) / 1000);
+                    
+                    const elH = document.getElementById('cd-hours');
+                    const elM = document.getElementById('cd-minutes');
+                    const elS = document.getElementById('cd-seconds');
+                    
+                    if (elH) elH.textContent = hh.toString().padStart(2, '0');
+                    if (elM) elM.textContent = mm.toString().padStart(2, '0');
+                    if (elS) elS.textContent = ss.toString().padStart(2, '0');
+                    
                     renderPrayerList(p);
                 }
             }
-            if(!foundNext) { document.getElementById('label-next').textContent = `Menuju Subuh`; renderPrayerList("Fajr"); }
+            if(!foundNext) { 
+                document.getElementById('label-next').textContent = `Subuh`; 
+                renderPrayerList("Fajr"); 
+            }
         }
 
         function renderPrayerList(nextKey = "") {
