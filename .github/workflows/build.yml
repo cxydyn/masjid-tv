@@ -46,6 +46,21 @@ jobs:
       - name: Init Tauri Android
         run: npx tauri android init || true
 
+      - name: Patch AndroidManifest untuk Smart TV (Leanback & Fitur)
+        run: |
+          MANIFEST="src-tauri/gen/android/app/src/main/AndroidManifest.xml"
+          if [ -f "$MANIFEST" ]; then
+            # 1. Tambahkan LEANBACK_LAUNCHER agar aplikasi muncul di Menu Utama TV
+            perl -pi -e 's|(<category android:name="android\.intent\.category\.LAUNCHER"\s*/>)|$1\n                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />|' $MANIFEST
+            
+            # 2. Beri tahu OS TV bahwa aplikasi ini TIDAK WAJIB menggunakan Touchscreen dan GPS/Location
+            perl -pi -e 's|(<application)|\n    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />\n    <uses-feature android:name="android.software.leanback" android:required="false" />\n    <uses-feature android:name="android.hardware.location" android:required="false" />\n    $1|' $MANIFEST
+            
+            echo "✅ AndroidManifest berhasil ditambal untuk kompatibilitas Android TV!"
+          else
+            echo "⚠️ AndroidManifest tidak ditemukan."
+          fi
+
       - name: Set up NPM Scripts
         run: |
           npm pkg set scripts.build="echo 'No build required'"
