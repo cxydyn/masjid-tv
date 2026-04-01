@@ -30,15 +30,20 @@ jobs:
         with:
           targets: aarch64-linux-android, armv7-linux-androideabi, i686-linux-android, x86_64-linux-android
 
-      - name: Install NDK (Android)
+      # SCRIPT PENTING BARU: Menghapus NDK 29 yang bermasalah dan memaksa NDK 26
+      - name: Force NDK 26
         run: |
+          echo "Menghapus NDK bawaan ubuntu-latest yang sering menyebabkan error..."
+          sudo rm -rf $ANDROID_HOME/ndk/*
+          echo "Menginstal NDK 26 yang stabil..."
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "ndk;26.1.10909125"
           echo "NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125" >> $GITHUB_ENV
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125" >> $GITHUB_ENV
 
       - name: Install NPM Packages
         run: npm install
 
-      # SCRIPT PENTING BARU: Memperbaiki Bundle Identifier bawaan Tauri
+      # Memperbaiki Bundle Identifier bawaan Tauri
       - name: Fix Tauri Identifier
         run: |
           if [ -f "src-tauri/tauri.conf.json" ]; then
@@ -50,15 +55,15 @@ jobs:
 
       # Menyiapkan folder Android sebelum di-build
       - name: Init Android Project
-        run: npx tauri android init
+        run: npx tauri android init || true
 
-      # SCRIPT BARU: Menambahkan dummy script 'build' agar Tauri tidak error
+      # Menambahkan dummy script 'build' agar Tauri tidak error
       - name: Setup Dummy Build Script
         run: |
           npm pkg set scripts.build="echo 'No build required for pure HTML'"
           echo "✅ Dummy build script berhasil ditambahkan!"
 
-      # SCRIPT PENTING: Menyuntikkan izin Android TV (Leanback & Non-Touchscreen)
+      # Menyuntikkan izin Android TV (Leanback & Non-Touchscreen)
       - name: Patch AndroidManifest untuk Smart TV
         run: |
           MANIFEST="src-tauri/gen/android/app/src/main/AndroidManifest.xml"
@@ -74,11 +79,11 @@ jobs:
             echo "⚠️ AndroidManifest tidak ditemukan."
           fi
 
-      # Merakit aplikasi Android (APK) - Diubah ke mode DEBUG agar otomatis "Signed"
+      # Merakit aplikasi Android (APK) di mode DEBUG agar otomatis "Signed"
       - name: Build APK (Tauri) Debug Mode
         run: npx tauri android build --apk --debug
 
-      # Menyerahkan hasil APK ke GitHub Actions (Gunakan Wildcard agar pasti ketemu)
+      # Menyerahkan hasil APK ke GitHub Actions
       - name: Upload APK Hasil
         uses: actions/upload-artifact@v4
         with:
