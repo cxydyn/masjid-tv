@@ -38,6 +38,16 @@ jobs:
       - name: Install NPM Packages
         run: npm install
 
+      # SCRIPT PENTING BARU: Memperbaiki Bundle Identifier bawaan Tauri
+      - name: Fix Tauri Identifier
+        run: |
+          if [ -f "src-tauri/tauri.conf.json" ]; then
+            sed -i 's/"com.tauri.dev"/"com.keluarga.tv"/g' src-tauri/tauri.conf.json
+            echo "✅ Bundle Identifier berhasil diubah ke com.keluarga.tv"
+          else
+            echo "⚠️ tauri.conf.json tidak ditemukan."
+          fi
+
       # Menyiapkan folder Android sebelum di-build
       - name: Init Android Project
         run: npx tauri android init
