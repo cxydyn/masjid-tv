@@ -57,22 +57,27 @@ jobs:
       - name: Init Android Project
         run: npx tauri android init || true
 
-      # Menambahkan dummy script 'build' agar Tauri tidak error
-      - name: Setup Dummy Build Script
+      # PERBAIKAN PENTING: Menambahkan script 'build' DAN 'tauri' agar kompilasi Gradle tidak gagal
+      - name: Setup NPM Scripts
         run: |
           npm pkg set scripts.build="echo 'No build required for pure HTML'"
-          echo "✅ Dummy build script berhasil ditambahkan!"
+          npm pkg set scripts.tauri="tauri"
+          echo "✅ Dummy build script dan Tauri script berhasil ditambahkan!"
 
-      # Menyuntikkan izin Android TV (Leanback & Non-Touchscreen)
+      # Menyuntikkan izin Android TV (Leanback & Non-Touchscreen) dengan pengecekan ganda
       - name: Patch AndroidManifest untuk Smart TV
         run: |
           MANIFEST="src-tauri/gen/android/app/src/main/AndroidManifest.xml"
           if [ -f "$MANIFEST" ]; then
-            # Tambahkan LEANBACK_LAUNCHER agar ikon muncul di menu TV
-            perl -pi -e 's|(<category android:name="android\.intent\.category\.LAUNCHER"\s*/>)|$1\n                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />|' $MANIFEST
+            # Tambahkan LEANBACK_LAUNCHER jika belum ada
+            if ! grep -q "LEANBACK_LAUNCHER" "$MANIFEST"; then
+              perl -pi -e 's|(<category android:name="android\.intent\.category\.LAUNCHER"\s*/>)|$1\n                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />|' $MANIFEST
+            fi
             
-            # Beri tahu TV bahwa aplikasi ini TIDAK butuh Layar Sentuh & GPS
-            perl -pi -e 's|(<application)|\n    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />\n    <uses-feature android:name="android.software.leanback" android:required="false" />\n    <uses-feature android:name="android.hardware.location" android:required="false" />\n    $1|' $MANIFEST
+            # Beri tahu TV bahwa aplikasi ini TIDAK butuh Layar Sentuh & GPS jika belum ada
+            if ! grep -q "android.software.leanback" "$MANIFEST"; then
+              perl -pi -e 's|(<application)|\n    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />\n    <uses-feature android:name="android.software.leanback" android:required="false" />\n    <uses-feature android:name="android.hardware.location" android:required="false" />\n    $1|' $MANIFEST
+            fi
             
             echo "✅ AndroidManifest berhasil ditambal untuk Android TV!"
           else
