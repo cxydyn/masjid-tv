@@ -1,19 +1,17 @@
-name: Build Tauri Android APK
+name: Build Android APK
 
+# Akan berjalan otomatis setiap kali Anda menyimpan (push) kode ke GitHub
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  build-android:
+  build:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      CI: true 
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -21,7 +19,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: Setup Java (JDK 17)
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
@@ -32,46 +30,41 @@ jobs:
         with:
           targets: aarch64-linux-android, armv7-linux-androideabi, i686-linux-android, x86_64-linux-android
 
-      - name: Install Android SDK & NDK
+      - name: Install NDK (Android)
         run: |
-          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" "ndk;26.1.10909125"
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "ndk;26.1.10909125"
           echo "NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125" >> $GITHUB_ENV
 
-      - name: Install Frontend Dependencies
+      - name: Install NPM Packages
         run: npm install
 
-      - name: Fix Tauri Identifier
-        run: sed -i 's/"com.tauri.dev"/"com.masjid.tv"/g' src-tauri/tauri.conf.json || true
+      # Menyiapkan folder Android sebelum di-build
+      - name: Init Android Project
+        run: npx tauri android init
 
-      - name: Init Tauri Android
-        run: npx tauri android init || true
-
-      - name: Patch AndroidManifest untuk Smart TV (Leanback & Fitur)
+      # SCRIPT PENTING: Menyuntikkan izin Android TV (Leanback & Non-Touchscreen)
+      - name: Patch AndroidManifest untuk Smart TV
         run: |
           MANIFEST="src-tauri/gen/android/app/src/main/AndroidManifest.xml"
           if [ -f "$MANIFEST" ]; then
-            # 1. Tambahkan LEANBACK_LAUNCHER agar aplikasi muncul di Menu Utama TV
+            # Tambahkan LEANBACK_LAUNCHER agar ikon muncul di menu TV
             perl -pi -e 's|(<category android:name="android\.intent\.category\.LAUNCHER"\s*/>)|$1\n                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />|' $MANIFEST
             
-            # 2. Beri tahu OS TV bahwa aplikasi ini TIDAK WAJIB menggunakan Touchscreen dan GPS/Location
+            # Beri tahu TV bahwa aplikasi ini TIDAK butuh Layar Sentuh & GPS
             perl -pi -e 's|(<application)|\n    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />\n    <uses-feature android:name="android.software.leanback" android:required="false" />\n    <uses-feature android:name="android.hardware.location" android:required="false" />\n    $1|' $MANIFEST
             
-            echo "✅ AndroidManifest berhasil ditambal untuk kompatibilitas Android TV!"
+            echo "✅ AndroidManifest berhasil ditambal untuk Android TV!"
           else
             echo "⚠️ AndroidManifest tidak ditemukan."
           fi
 
-      - name: Set up NPM Scripts
-        run: |
-          npm pkg set scripts.build="echo 'No build required'"
-          npm pkg set scripts.tauri="tauri"
+      # Merakit aplikasi Android (APK) - Diubah ke mode DEBUG agar otomatis "Signed"
+      - name: Build APK (Tauri) Debug Mode
+        run: npx tauri android build --apk --debug
 
-      # MENGUBAH KE MODE DEBUG AGAR OTOMATIS SIGNED DAN BISA DIINSTAL
-      - name: Build APK Android (Debug Mode)
-        run: npx tauri android build --debug --apk
-
-      - name: Upload APK Artifact
+      # Menyerahkan hasil APK ke GitHub Actions (Gunakan Wildcard agar pasti ketemu)
+      - name: Upload APK Hasil
         uses: actions/upload-artifact@v4
         with:
-          name: Aplikasi-Jadwal-Sholat-Lingkaran
-          path: src-tauri/gen/android/app/build/outputs/apk/universal/debug/*.apk
+          name: Aplikasi-Jadwal-Sholat-TV
+          path: src-tauri/gen/android/app/build/outputs/apk/**/*.apk
