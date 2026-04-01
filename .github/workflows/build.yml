@@ -52,6 +52,12 @@ jobs:
       - name: Init Android Project
         run: npx tauri android init
 
+      # SCRIPT BARU: Menambahkan dummy script 'build' agar Tauri tidak error
+      - name: Setup Dummy Build Script
+        run: |
+          npm pkg set scripts.build="echo 'No build required for pure HTML'"
+          echo "✅ Dummy build script berhasil ditambahkan!"
+
       # SCRIPT PENTING: Menyuntikkan izin Android TV (Leanback & Non-Touchscreen)
       - name: Patch AndroidManifest untuk Smart TV
         run: |
